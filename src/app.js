@@ -17,7 +17,10 @@ const corsOptions = {
     credentials: true
 };
 
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: '*',
+  credentials: true,
+}));
 
 app.use("/api/users", userRouter);
 app.use("/api/resumes", resumeRouter);
