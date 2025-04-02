@@ -13,14 +13,11 @@ app.use(cookieParser());
 
 
 const corsOptions = {
-    origin: [process.env.ALLOWED_SITE, "https://your-netlify-app.netlify.app"],
+    origin: [process.env.ALLOWED_SITE],
     credentials: true
 };
 
-app.use(cors({
-  origin: '*',
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 
 app.use("/api/users", userRouter);
 app.use("/api/resumes", resumeRouter);
