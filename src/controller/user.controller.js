@@ -118,21 +118,13 @@ const loginUser = async (req, res) => {
 
     console.log("Login Successful");
     return res
-      .cookie("token", jwtToken, cookieOptions)
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          {
-            user: {
-              id: user._id,
-              email: user.email,
-              fullName: user.fullName,
-            },
-          },
-          "User logged in successfully."
-        )
-      );
+  .status(500)
+  .json(new ApiError(
+    500, 
+    "Internal Server Error", 
+    [], 
+    process.env.NODE_ENV === "production" ? null : err.stack
+  ));
   } catch (err) {
     console.log("Login Failed: Server error");
     console.error("Error during login:", err);
