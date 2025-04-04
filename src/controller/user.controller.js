@@ -108,10 +108,11 @@ const loginUser = async (req, res) => {
 
     const cookieOptions = {
   httpOnly: true,
-  expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-  sameSite: "none",  // Required for cross-site cookies
-  secure: true,      // Required when sameSite is "none"
-  path: "/"          // Ensure cookies are sent with all requests
+  expires: new Date(
+    Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 24) * 60 * 60 * 1000
+  ),
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: process.env.NODE_ENV === "production",
 };
     
 
