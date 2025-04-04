@@ -12,14 +12,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
-const corsOptions = {
-  origin: process.env.ALLOWED_SITE,  // Make sure this matches exactly
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-};
+const allowedOrigins = [process.env.ALLOWED_SITE];
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
-app.use(cors(corsOptions));
+app.use(express.json());
 
 app.use("/api/users", userRouter);
 app.use("/api/resumes", resumeRouter);
