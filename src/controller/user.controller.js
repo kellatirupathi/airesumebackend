@@ -4,20 +4,22 @@ import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
+// Fetch user details (if authenticated)
 const start = async (req, res) => {
   if (req.user) {
     return res.status(200).json(new ApiResponse(200, req.user, "User Found"));
   } else {
-    return res.status(404).json(new ApiResponse(404, null, "Use Not Found"));
+    return res.status(404).json(new ApiResponse(404, null, "User Not Found"));
   }
 };
 
+// Register a new user
 const registerUser = async (req, res) => {
   console.log("Registration Started");
   const { fullName, email, password } = req.body;
 
   if (!fullName || !email || !password) {
-    console.log("Registration Failed data insufficeient ");
+    console.log("Registration Failed: Data insufficient");
     return res
       .status(400)
       .json(
@@ -32,7 +34,7 @@ const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      console.log("Registration Failed already registered user");
+      console.log("Registration Failed: User already registered");
       return res
         .status(409)
         .json(new ApiError(409, "User already registered."));
@@ -59,16 +61,15 @@ const registerUser = async (req, res) => {
       )
     );
   } catch (err) {
-    // Change the error parameter to err
     console.log("Registration Failed due to server error");
     console.error("Error while creating user:", err);
     return res
       .status(500)
       .json(new ApiError(500, "Internal Server Error.", [], err.stack));
   }
-  // return res.status(200).send("Hello WOrld")
 };
 
+// Login user
 const loginUser = async (req, res) => {
   console.log("Login Started");
   const { email, password } = req.body;
@@ -97,34 +98,43 @@ const loginUser = async (req, res) => {
 
     if (!isPasswordCorrect) {
       console.log("Login Failed: Invalid credentials");
-      return res.status(406).json(new ApiError(406, "Invalid credentials."));
+      return res.status(401).json(new ApiError(401, "Invalid credentials."));
     }
 
     const jwtToken = jwt.sign(
-      { id: user.id },
+      { id: user._id }, // Use _id instead of id for consistency with MongoDB
       process.env.JWT_SECRET_KEY,
-      { expiresIn: process.env.JWT_SECRET_EXPIRES_IN } // Add token expiration for better security
+      { expiresIn: process.env.JWT_SECRET_EXPIRES_IN || "1d" } // Default to 1 day if not set
     );
 
+    // Set cookie options
     const cookieOptions = {
-  httpOnly: true,
-  expires: new Date(
-    Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 24) * 60 * 60 * 1000
-  ),
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  secure: process.env.NODE_ENV === "production",
-};
-    
+      httpOnly: true,
+      expires: new Date(
+        Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 24) * 60 * 60 * 1000
+      ),
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    };
+
+    // Set the JWT token as a cookie
+    res.cookie("token", jwtToken, cookieOptions);
 
     console.log("Login Successful");
-    return res
-  .status(500)
-  .json(new ApiError(
-    500, 
-    "Internal Server Error", 
-    [], 
-    process.env.NODE_ENV === "production" ? null : err.stack
-  ));
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          user: {
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+          },
+          token: jwtToken,
+        },
+        "Login successful"
+      )
+    );
   } catch (err) {
     console.log("Login Failed: Server error");
     console.error("Error during login:", err);
@@ -134,8 +144,9 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Logout user
 const logoutUser = (req, res) => {
-  console.log("Logged out");
+  console.log("Logout Started");
   if (req.user) {
     return res
       .clearCookie("token")
