@@ -8,15 +8,15 @@ config();
 
 const app = express();
 
-// CORS Configuration
-const allowedOrigins = ['https://subtle-pegasus-79aaa-7.netlify.app'];
+const allowedOrigins = [process.env.ALLOWED_SITE || 'https://subtle-pegasus-79aaa-7.netlify.app'];
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('Received Origin:', origin); // Debug log
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS. Origin: ' + origin));
     }
   },
   credentials: true,
