@@ -1,27 +1,38 @@
-import express from "express";
-import cookieParser from "cookie-parser";
-import userRouter from "./routes/user.routes.js";
-import resumeRouter from "./routes/resume.routes.js";
-import cors from "cors";
-import { config } from "dotenv";
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import userRouter from './routes/user.routes.js';
+import resumeRouter from './routes/resume.routes.js';
+import cors from 'cors';
+import { config } from 'dotenv';
 config();
 
 const app = express();
 
-// THIS SHOULD BE THE FIRST app.use() AFTER INITIALIZATIONS
-app.use(cors({
-  origin: 'https://subtle-pegasus-79aaa-7.netlify.app',
+// CORS Configuration
+const allowedOrigins = ['https://subtle-pegasus-79aaa-7.netlify.app'];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Add all necessary methods
-  allowedHeaders: 'Content-Type,Authorization', // Add all necessary headers
-}));
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization',
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight requests
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.json()); // Make sure this is after the cors middleware
 
-app.use("/api/users", userRouter);
-app.use("/api/resumes", resumeRouter);
+app.use('/api/users', userRouter);
+app.use('/api/resumes', resumeRouter);
 
 export default app;
