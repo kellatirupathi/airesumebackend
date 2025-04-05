@@ -30,8 +30,10 @@ const resumeSchema = new mongoose.Schema({
       "elegant-portfolio",
       "modern-timeline",
       "modern-grid",
-      "modern-sidebar",       // Added new template
-      "gradient-accent"       // Added new template
+      "modern-sidebar",
+      "gradient-accent",
+      "bold-impact",       // Added new template
+      "split-frame"        // Added new template
     ] 
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
