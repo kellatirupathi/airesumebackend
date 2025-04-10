@@ -1,6 +1,13 @@
-// src/models/resume.model.js
 import mongoose from "mongoose";
 import educationSchema from "./education.model.js";
+
+// Define the certification schema
+const certificationSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  issuer: { type: String, required: true },
+  date: { type: String },
+  description: { type: String }
+}, { _id: false });
 
 const resumeSchema = new mongoose.Schema({
   firstName: { type: String, default: "" },
@@ -32,8 +39,10 @@ const resumeSchema = new mongoose.Schema({
       "modern-grid",
       "modern-sidebar",
       "gradient-accent",
-      "bold-impact",       // Added new template
-      "split-frame"        // Added new template
+      "bold-impact",
+      "split-frame",
+      "minimalist-pro",
+      "digital-card"
     ] 
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -70,11 +79,18 @@ const resumeSchema = new mongoose.Schema({
       deployedLink: { type: String },
     },
   ],
+  // Add certifications array to schema
+  certifications: [
+    {
+      type: certificationSchema,
+    },
+  ],
   themeColor: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Create the model and export as default
 const Resume = mongoose.model("Resume", resumeSchema);
 
 export default Resume;
